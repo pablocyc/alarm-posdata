@@ -24,47 +24,53 @@
 *     sirena:    D10                                               *
 ********************************************************************/
 
-// Librerias
+// Libraries
 #include <EEPROM.h>
 #include <Wiegand.h>
 
-// Entradas
-#define sensor-z1         7
-#define sensor-timbre     8
-// Salidas
+// Inputs
+// These are pins connected to the sensors.
+#define sensor_z1         7
+#define sensor_timbre     8
+// Outputs
 #define beep           4
 #define led            6 
 #define sirena         10
 
-// Configuracion Wiegand 
+// The object that handles the wiegand protocol.
 WIEGAND wg;
 
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("Initialize Wiegand...");
+  // Inizialize Weigand
   wg.begin();
-  // Configuracion Entradas
-  pinMode(sensor-z1, INPUT);
-  pinMode(sensor-timbre, INPUT);
-  // Configuracion Salidas
+
+  // Initialize pins as inputs 
+  pinMode(sensor_z1, INPUT);
+  pinMode(sensor_timbre, INPUT);
+  // Initialize outputs
   pinMode(beep, OUTPUT);
   pinMode(led, OUTPUT);
   pinMode(sirena, OUTPUT);
-  // Estados iniciales
+  // initial state
   off();
   
 }
 
 void loop() {
-  if(wg.available()) {
-    Serial.print("Wiegand HEX = ");
-    Serial.print(wg.getCode(),HEX);        
-    Serial.print(", Type W");       
-    Serial.println(wg.getWiegandType());     
-
-    int leer = wg.getCode();
-  }
+	if(wg.available())
+	{
+		Serial.print("Wiegand HEX = ");
+		Serial.print(wg.getCode(),HEX);
+		Serial.print(", DECIMAL = ");
+		Serial.print(wg.getCode());
+		Serial.print(", Type W");
+		Serial.println(wg.getWiegandType());    
+	}
 }
+
 
 
 
