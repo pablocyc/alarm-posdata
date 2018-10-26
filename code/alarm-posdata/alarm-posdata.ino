@@ -53,11 +53,12 @@ int timeSirena;
 int contAlarm;
 int contSirena = 0;
 int contBell = 0;
+int contDesactiveSirena = 0;
 int aux;
 int timeDelaySirena = 60;
-int timeBellOn = 300;
+int timeBellOn = 800;
 int timeBellOff = 200;
-int timeDelayBell = 10000;
+int timeDelayBell = 8000;
 int timeB;
 int timeB_aux = 0;
 long dataKey = 0;
@@ -72,6 +73,7 @@ bool flagDelaySirena = false;
 bool flagDesactiveSirena = false;
 bool flagBell = true;
 bool flagBellBeep = false;
+bool flagArmar = false;
 
 
 void setup() {
@@ -136,7 +138,7 @@ void ActiveAlarm() {
       if((millis() - currentTime) > 600) {
         aux = led;
         digitalWrite(beep, LOW);
-        delay(500);
+        delay(1500);
         digitalWrite(beep, HIGH);
         flagActive = false;
         flagSirena = true;
@@ -154,13 +156,12 @@ void ActiveBell() {
       flagBellBeep = true;    
     }
     if(flagBellBeep) {
-      if(contBell == 4) timeB = 1500;
-      if(contBell > 8) {
+      if(contBell >= 4) {
         digitalWrite(beep, HIGH);
         contBell = 0;
-        flagBellBeep = false;
         timeB_aux = timeDelayBell;
         currentTimeBell = millis();
+        flagBellBeep = false;
       }
       if((millis() - currentTimeBell) > timeB) {
         currentTimeBell = millis();
@@ -181,13 +182,19 @@ void DelayAlarm() {
     contAlarm = 0;
     flagAlarm = false;
     flagActive = true;
+    flagArmar = false;
     Serial.println("Alarma Armada");
     if(flagDesactiveSirena) {
+      contDesactiveSirena++;
       flagActive = false;
       flagDesactiveSirena = false;
       flagDelaySirena = true;
       Off();
       flagSirena = false;
+      if(contDesactiveSirena >= 3) {
+        Off();
+        Init();
+      }
     }
     if(flagSirena) {
       flagActive = false;
@@ -209,6 +216,11 @@ void Escape() {
   flagProg = false;
   value = 0;
   dataKey = 0;
+  if(flagArmar) {
+    flagArmar = false;
+    Off();
+    Init();
+  }
 }
 
 void Enter() {
@@ -216,18 +228,15 @@ void Enter() {
   Serial.println(dataKey);
   if(dataKey == ReadMemory(0)) {
     aux = beep;
+    flagArmar = true;
     flagAlarm = true;
     timeAlarm = ReadMemory(50);
     contAlarm = 0;
     digitalWrite(led, LOW);
     if(flagSirena || flagActive) {
-      flagAlarm = false;
-      flagSirena = false;
-      flagActive = false;
-      flagDelaySirena = false;
+      flagArmar = false;
       Off();
       Init();
-      digitalWrite(led, HIGH);
     }
   }
   if(dataKey == 999) {
@@ -243,6 +252,7 @@ void ActiveSirena() {
   Serial.println("Sirena Activada");
   flagDesactiveSirena = true;
   flagAlarm = true;
+  aux = led;
   timeAlarm = timeSirena * 60;
 }
 
@@ -282,4 +292,5 @@ void Init() {
   flagActive = false;
   flagDelaySirena = false;
   flagDesactiveSirena = false;
+  digitalWrite(led, HIGH);
 }
